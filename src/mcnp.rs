@@ -9,6 +9,9 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
     // check if crit case
     let crit = check_if_crit(content);
 
+    //TODO: get rundate, runtime
+    let (ctme, nps) = get_runtime(content);
+
 
 }
 
@@ -22,7 +25,29 @@ pub fn check_if_crit(file:&Vec<String>) -> bool {
     return false;
 }
 
-pub fn get_data(content:&Vec<String>) {
+pub fn get_runtime(content:&Vec<String>) -> (String, String) {
+    let mut rundate:String;
+    let mut runtime:String;
+
+    //         # date_time = {'date': f"{y}/{m}/{d}", 'time': time}
+    //         rundate = f"{y}/{m}/{d}"
+    //         runtime = time
+    //         return rundate, runtime
+    for line in content {
+        if line.starts_with("1mcnp") {  // better regex for this line is "1mcnp.*version.*\d\d/\d\d/\d\d.*"
+            let split_line:Vec<&str> = line.split_whitespace().collect();
+            // split line on spaces
+            runtime = String::from(split_line[5]);
+            // get rundate
+            let date:Vec<&str> = split_line[4].split("/").collect();
+            let d:&str = date[1];
+            let m:&str = date[0];
+            let y:String = format!("{}{}", "20", &date[2]);
+            let rundate= format!("{y}/{m}/{d}");
+            return (rundate, runtime);
+        } 
+    }
+    return (String::from("Not Found"), String::from("Not Found"));
 
 }
 

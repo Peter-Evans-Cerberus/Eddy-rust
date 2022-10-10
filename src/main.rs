@@ -36,9 +36,11 @@ fn read_file(filepath: &String) -> Vec<String> {
 
 fn determine_code(file:&Vec<String>) -> String {
     //TODO: make this work even with files < 4 lines long - how do try/except work in Rust?
-    if file[0].contains("MCNP") {
+    if file[0].contains("Code Name & Version = MCNP") || file[0].contains("1mcnp     version") {
+        println!("Case identified as MCNP output.");
         return String::from("MCNP");
     } else if file[2].contains("SCALE") {
+        println!("Case identified as SCALE output.");
         return String::from("SCALE");
     } else {
         panic!("File not identified as SCALE or MCNP output.")

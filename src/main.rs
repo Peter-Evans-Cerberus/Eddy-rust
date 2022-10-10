@@ -6,24 +6,27 @@ use std::io::{prelude::*, BufReader};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let filepath = args[1].to_string();
+    let filepath = args[1].as_str();
     let scaling_factor = args[2].parse::<f64>().unwrap();
     println!("{scaling_factor}");
     assert!(check_file_exists(&filepath), "Input file {} not found.", &filepath);
 
     let data = read_file(&filepath);
-    let code:String = determine_code(&data);
+    let code:&str = determine_code(&data);
+    if code == "MCNP" {
+        let crit:bool = check_if_crit(&data);
+    }
 
 }
 
 
-fn check_file_exists(filepath: &String) -> bool {
+fn check_file_exists(filepath: &str) -> bool {
     let result = Path::new(filepath).exists();
     return result;
 }
 
 
-fn read_file(filepath: &String) -> Vec<String> {
+fn read_file(filepath: &str) -> Vec<String> {
     let file = fs::File::open(filepath).expect("Problem finding file.");
     let reader = BufReader::new(file);
     let mut content = Vec::new();
@@ -34,14 +37,14 @@ fn read_file(filepath: &String) -> Vec<String> {
 } 
 
 
-fn determine_code(file:&Vec<String>) -> String {
+fn determine_code(file:&Vec<String>) -> &str {
     //TODO: make this work even with files < 4 lines long - how do try/except work in Rust?
     if file[0].contains("Code Name & Version = MCNP") || file[0].contains("1mcnp     version") {
         println!("Case identified as MCNP output.");
-        return String::from("MCNP");
+        return "MCNP";
     } else if file[2].contains("SCALE") {
         println!("Case identified as SCALE output.");
-        return String::from("SCALE");
+        return "SCALE";
     } else {
         panic!("File not identified as SCALE or MCNP output.")
     };
@@ -49,6 +52,15 @@ fn determine_code(file:&Vec<String>) -> String {
 
 }
 
+
+fn check_if_crit(file:&Vec<String>) -> bool {
+    for line in file {
+        if line.contains("kcode") {
+            return true;
+        };
+    };
+    return false;
+}
 
 
 #[cfg(test)]
@@ -128,7 +140,26 @@ mod tests {
             String::from(" _/      _/        _/_/_/       _/      _/       _/             _/_/       "),
         ];
         assert_ne!(determine_code(&test_vec), "SCALE");
+    }
 
+    #[test]
+    fn test_check_if_crit() {
+        let test_vec_crit = vec![
+            String::from("         2 warning messages so far."),            
+            String::from(""),
+            String::from(""),
+            String::from(" run terminated when     200 kcode cycles were done."),
+            String::from(""),
+            String::from(" computer time =    0.39 minutes"),        
+        ];
+        let test_vec_not_crit = vec![
+            String::from("          Code Name & Version = MCNP_6.20, 6.2.0 "),
+            String::from("  "),
+            String::from("     _/      _/        _/_/_/       _/      _/       _/_/_/         _/_/_/ "),
+            String::from("    _/_/  _/_/      _/             _/_/    _/       _/    _/     _/        "),
+        ];
+        assert!(check_if_crit(&test_vec_crit));
+        assert!(!check_if_crit(&test_vec_not_crit));
     }
 }
 

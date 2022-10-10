@@ -8,13 +8,19 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let filepath = args[1].as_str();
     let scaling_factor = args[2].parse::<f64>().unwrap();
+    //TODO: remove println below
     println!("{scaling_factor}");
     assert!(check_file_exists(&filepath), "Input file {} not found.", &filepath);
 
+    // read in data as vec<String>
     let data = read_file(&filepath);
-    let code:&str = determine_code(&data);
+    //TODO: Sanitize input string
+    // check if case is MCNP or SCALE
+    let code:&str = determine_code(&data);     
+    // Check if case is crit or shielding 
+    let mut crit:bool = false;
     if code == "MCNP" {
-        let crit:bool = check_if_crit(&data);
+        crit = check_if_crit(&data);
     }
 
 }

@@ -1,0 +1,4 @@
+The Zen of Rust.
+
+Rust is not Zen.
+Go back to Python.

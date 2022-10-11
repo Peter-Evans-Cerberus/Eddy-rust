@@ -12,20 +12,22 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
     //TODO: get rundate, runtime
     let (rundate, runtime) = get_rundate(content);
     println!("{rundate} {runtime}");
-    //let (ctme, nps) = 
+    
+    let (ctme, nps) = get_run_length(content);
 
 
 }
 
 
-pub fn check_if_crit(file:&Vec<String>) -> bool {
-    for line in file {
+pub fn check_if_crit(content:&Vec<String>) -> bool {
+    for line in content {
         if line.contains("kcode") {
             return true;
         };
     };
     return false;
 }
+
 
 pub fn get_rundate(content:&Vec<String>) -> (String, String) {
 
@@ -43,13 +45,37 @@ pub fn get_rundate(content:&Vec<String>) -> (String, String) {
                 return (rundate, time);
             },
             None => continue,
-
         }
     }
     return (String::from("Not Found"), String::from("Not Found"));
-
 }
 
+pub fn get_run_length(content:&Vec<String>) -> (String, String) {
+    let re_nps = Regex::new(r"^\s{6,}\d+-\s{7}(nps|NPS)\s+(\d+.*)\s*").unwrap();
+    let re_ctme = Regex::new(r"^\s{6,}\d+-\s{7}(ctme|CTME)\s+(\d+).*").unwrap();
+    for line in content {
+        // find ctme card
+        match re_ctme.captures(line) {
+            Some(caps) => {
+                let ctme:String = caps[2].to_string();
+                let nps:String = String::from("N/A");
+                return (ctme, nps);
+            },
+            None => (),
+        };
+        // in absence of ctme, find nps card
+        match re_nps.captures(line) {
+            Some(caps) => {
+                let nps:String = caps[2].to_string();
+                let ctme:String = String::from("N/A");
+                return (ctme, nps);
+            },
+            None => (),
+        }
+    };
+    // If neither ctme or nps found, return "Not found".
+    return ("Not found".to_string(), "Not found".to_string());
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TESTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,8 +89,6 @@ mod tests {
     #[test]
     fn test_check_if_crit() {
         let test_vec_crit = vec![
-            String::from("         2 warning messages so far."),            
-            String::from(""),
             String::from(""),
             String::from(" run terminated when     200 kcode cycles were done."),
             String::from(""),
@@ -91,6 +115,26 @@ mod tests {
         let (rundate, runtime) = get_rundate(&test_input);
         assert_eq!(rundate, String::from("2022/10/06"));
         assert_eq!(runtime, String::from("16:01:31"))
+    }
+
+    #[test]
+    fn test_get_run_length() {
+        // ctme test
+        let input = vec![
+            String::from("        84-       c"),
+            String::from("        85-       c"),
+            String::from("        86-       CTME 1"),
+            String::from("        87-       c"),
+            String::from("        88-       c"),
+        ];
+
+        // 5333-       c RUN MCNP $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+        // 5334-       nps 3e6
+        // 5335-       prdmp 3e5 3e5 1 10 3e5
+
+        let (ctme, nps) = get_run_length(&input);
+        assert_eq!(ctme, "1");
+        assert_eq!(nps, "N/A");
     }
 
 }

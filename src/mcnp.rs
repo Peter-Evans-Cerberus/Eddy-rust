@@ -1,21 +1,34 @@
 extern crate regex;
 use regex::Regex;
 use std::path::Path;
+use std::path::PathBuf;
+use std::fs::File;
+use std::io::Write;
+mod style;
 
 
 pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
 
     let filename = filepath.file_name().expect("Error finding MCNP output filename.");
+    let location = filepath.parent().unwrap();
     // check if crit case
     let crit = check_if_crit(content);
 
-    //TODO: get rundate, runtime
     let (rundate, runtime) = get_rundate(content);
     println!("{rundate} {runtime}");
-    
+
     let (ctme, nps) = get_run_length(content);
 
+    // create html file
+    let mut html_path = PathBuf::new();
+    html_path.push(location.to_str().expect("Error determining path."));
+    html_path.push(filename);
+    html_path.set_extension("html");
+    let mut html_file = File::create(html_path).expect("Unable to create html file.");
 
+    // get css and write to html file
+    let css = style::get_css();
+    html_file.write_all(css.as_bytes()).expect("Unable to write css to file.");
 }
 
 

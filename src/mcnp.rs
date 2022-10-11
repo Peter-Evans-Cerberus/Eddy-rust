@@ -10,7 +10,9 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
     let crit = check_if_crit(content);
 
     //TODO: get rundate, runtime
-    let (ctme, nps) = get_runtime(content);
+    let (rundate, runtime) = get_rundate(content);
+    println!("{rundate} {runtime}");
+    //let (ctme, nps) = 
 
 
 }
@@ -25,27 +27,24 @@ pub fn check_if_crit(file:&Vec<String>) -> bool {
     return false;
 }
 
-pub fn get_runtime(content:&Vec<String>) -> (String, String) {
-    let mut rundate:String;
-    let mut runtime:String;
+pub fn get_rundate(content:&Vec<String>) -> (String, String) {
 
-    //         # date_time = {'date': f"{y}/{m}/{d}", 'time': time}
-    //         rundate = f"{y}/{m}/{d}"
-    //         runtime = time
-    //         return rundate, runtime
+    let re = Regex::new(r"1mcnp.*version\s\d.*\d\d/\d\d/\d\d\s*(\d\d/\d\d/\d\d)\s(\d\d:\d\d:\d\d)").unwrap();
     for line in content {
-        if line.starts_with("1mcnp") {  // better regex for this line is "1mcnp.*version.*\d\d/\d\d/\d\d.*"
-            let split_line:Vec<&str> = line.split_whitespace().collect();
-            // split line on spaces
-            runtime = String::from(split_line[5]);
-            // get rundate
-            let date:Vec<&str> = split_line[4].split("/").collect();
-            let d:&str = date[1];
-            let m:&str = date[0];
-            let y:String = format!("{}{}", "20", &date[2]);
-            let rundate= format!("{y}/{m}/{d}");
-            return (rundate, runtime);
-        } 
+        match re.captures(line) {
+            Some(caps) => {
+                let date:Vec<&str> = caps[1].split("/").collect();
+                let time:String = caps[2].to_string();
+                // format date from mm/dd/yy to yyyy/mm/dd                
+                let d:&str = date[1];
+                let m:&str = date[0];
+                let y:String = format!("20{}",date[2]);
+                let rundate = format!("{y}/{m}/{d}");
+                return (rundate, time);
+            },
+            None => continue,
+
+        }
     }
     return (String::from("Not Found"), String::from("Not Found"));
 
@@ -80,4 +79,18 @@ mod tests {
         assert!(check_if_crit(&test_vec_crit));
         assert!(!check_if_crit(&test_vec_not_crit));
     }
+
+    #[test]
+    fn test_get_rundate() {
+        let test_input: Vec<String> = vec![
+            String::from("              "),
+            String::from("1mcnp     version 6     ld=02/20/18                     10/06/22 16:01:31 "),
+            String::from("*************************************************************************                 probid =  10/06/22 16:01:31 "),
+            String::from("inp=Cs_example_simple.mcnp out=Cs_example_simple.out name=Cs_example_simple. TAS"),
+        ];
+        let (rundate, runtime) = get_rundate(&test_input);
+        assert_eq!(rundate, String::from("2022/10/06"));
+        assert_eq!(runtime, String::from("16:01:31"))
+    }
+
 }

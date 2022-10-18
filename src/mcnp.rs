@@ -4,6 +4,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
+use std::collections::HashMap;
 use tera::{Tera, Context};
 use chrono;
 
@@ -22,6 +23,8 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
     let (ctme, nps) = get_run_length(content);
 
     let mcnp_input: Vec<String> = get_input(content);
+
+    let parameters: HashMap<String, String> = get_parameters(&mcnp_input);
 
 
 
@@ -45,6 +48,7 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
         &runtime,
         &ctme, 
         &nps,
+        &parameters,
         &mcnp_input,
         &particle_list,
     );
@@ -154,6 +158,52 @@ pub fn get_input(content:&Vec<String>) -> Vec<String> {
 }
 
 
+pub fn get_parameters(input: &Vec<String>) -> HashMap<String, String> {
+    // Returns any parameters from the mcnp input
+    //
+    // Arguments
+    // * input - a &Vec<string> containing the mcnp input section taken from the .out file
+    // 
+
+    // Initialize variables needed for this function
+    let mut parameters: HashMap<String,String> = HashMap::new();
+    let mut parameters_present: bool = false;
+    let mut start:usize = 0;
+
+    // find start of parameter section by looking for string "USING THE FOLLOWING VARIABLES"
+    // and call the index of this line 'start', set variables_present to true
+    for (index, line) in input.iter().enumerate() {
+        if line.contains("USING THE FOLLOWING VARIABLES") {
+            start = index;
+            parameters_present = true;
+            break;
+        }
+    }
+
+    // if parameters have bgeen found,
+    // loop from 'start+1' to end of input, 
+    // add captures from each line matching regex as k:v pairs to parameters HashMap
+    // break out of loop on first line that doesn't match regex 
+    if parameters_present {
+        let re  = Regex::new(r"\s*\d+-\s+c\s*(\S*)\s*=\s*(\S*)\s*").unwrap();
+        for i in start+1..input.len() {
+            match re.captures(&input[i]) {
+                Some(caps) => {
+                    parameters.insert(caps[1].to_string(), caps[2].to_string());
+                },
+            None => break,
+            }          
+        };
+    }
+
+    // for (k, v) in &parameters {
+        // println!("{k} : {v}");
+        // }
+    return parameters
+}
+
+
+
 pub fn get_html(
                     filename: &String,
                     scaling_factor:&f64,
@@ -162,6 +212,7 @@ pub fn get_html(
                     runtime: &String,
                     ctme: &String ,
                     nps: &String,
+                    parameters: &HashMap<String, String>,
                     mcnp_input: &Vec<String>,
                     particle_list: &Vec<&str>,
                     ) -> String {
@@ -185,6 +236,7 @@ pub fn get_html(
     context.insert("time", &time);
     context.insert("ctme", &ctme);
     context.insert("nps", &nps);
+    context.insert("parameters", &parameters);
     context.insert("mcnp_input", &mcnp_input);
     context.insert("particle_list", &particle_list);
 

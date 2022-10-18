@@ -357,7 +357,25 @@
     </details>
     </div>
 
-
+    {% if parameters %}
+    <div id="parameters">
+    <details>
+        <summary>Parameters</summary>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+            </tr>
+            {% for parameter, value in parameters %}
+                <tr>
+                    <td>{{ parameter }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </details>
+    </div>
+    {% endif %}
 
 
     <div id="input_deck">

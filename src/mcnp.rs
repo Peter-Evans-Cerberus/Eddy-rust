@@ -110,7 +110,7 @@ pub fn write_html(
 
     // Tera templating
     // Create new Tera instance
-    let tera = match Tera::new("src/templates/**/*") {
+    let mut tera = match Tera::new("src/templates/**/*") {
         Ok(t) => t,
         Err(e) => {
             println!("Parsing error(s): {}", e);
@@ -120,9 +120,6 @@ pub fn write_html(
     // Create new context
     let mut context = Context::new();
 
-    // Get css and add to context
-    let css = style::get_css();
-    context.insert("css", &css);
     context.insert("filename", &filename);
     context.insert("scaling_factor", &scaling_factor);
     context.insert("crit", &crit);
@@ -134,7 +131,6 @@ pub fn write_html(
     // Placeholder
     context.insert("name", &"World");
 
-
     // Render template using context
     let html = tera.render("mcnp_template.html", &context).expect("Failed to render template.");
 
@@ -143,9 +139,9 @@ pub fn write_html(
     html_path.push(&location);
     html_path.push(&filename);
     html_path.set_extension("html");
-    // Write html file
     let mut html_file = File::create(&html_path).expect("Unable to create html file.");
     println!("\nCreated file {}", &html_path.display());
+    // Write html file
     html_file.write_all(html.as_bytes()).expect("Unable to write html to file.");
     println!("Wrote HTML to file {}", &html_path.display());
 

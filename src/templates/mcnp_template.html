@@ -358,5 +358,18 @@
     </div>
 
 
+
+
+    <div id="input_deck">
+        <details>
+          <summary>MCNP Input</summary>
+          <div id="input">
+            {% for line in mcnp_input %}
+              <p>{{ line }}</p>
+            {% endfor %}
+          </div>
+        </details>
+    </div>
+
 </body>
 </html>

@@ -45,6 +45,7 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
         &runtime,
         &ctme, 
         &nps,
+        &mcnp_input,
         &particle_list,
     );
     // Write html string to file
@@ -161,6 +162,7 @@ pub fn get_html(
                     runtime: &String,
                     ctme: &String ,
                     nps: &String,
+                    mcnp_input: &Vec<String>,
                     particle_list: &Vec<&str>,
                     ) -> String {
 
@@ -183,6 +185,7 @@ pub fn get_html(
     context.insert("time", &time);
     context.insert("ctme", &ctme);
     context.insert("nps", &nps);
+    context.insert("mcnp_input", &mcnp_input);
     context.insert("particle_list", &particle_list);
 
     // Render template using context

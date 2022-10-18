@@ -4,31 +4,36 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
+use tera::{Tera, Context};
 mod style;
 
 
 pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
 
-    let filename = filepath.file_name().expect("Error finding MCNP output filename.");
-    let location = filepath.parent().unwrap();
+    let name = filepath.file_name().expect("Error finding MCNP output filename.").to_str().expect("Failed to convert filename to str.");
+    let filename:String = String::from(name);
+
+    let location = filepath.parent().unwrap().display().to_string();
     // check if crit case
     let crit = check_if_crit(content);
 
     let (rundate, runtime) = get_rundate(content);
-    println!("{rundate} {runtime}");
 
     let (ctme, nps) = get_run_length(content);
 
-    // create html file
-    let mut html_path = PathBuf::new();
-    html_path.push(location.to_str().expect("Error determining path."));
-    html_path.push(filename);
-    html_path.set_extension("html");
-    let mut html_file = File::create(html_path).expect("Unable to create html file.");
 
-    // get css and write to html file
-    let css = style::get_css();
-    html_file.write_all(css.as_bytes()).expect("Unable to write css to file.");
+    // Write html using data in struct
+    write_html(
+        filename,
+        location,
+        scaling_factor,
+        crit,
+        rundate,
+        runtime,
+        ctme, 
+        nps,
+    );
+
 }
 
 
@@ -63,6 +68,7 @@ pub fn get_rundate(content:&Vec<String>) -> (String, String) {
     return (String::from("Not Found"), String::from("Not Found"));
 }
 
+
 pub fn get_run_length(content:&Vec<String>) -> (String, String) {
     let re_nps = Regex::new(r"^\s{6,}\d+-\s{7}(nps|NPS)\s+(\d+.*)\s*").unwrap();
     let re_ctme = Regex::new(r"^\s{6,}\d+-\s{7}(ctme|CTME)\s+(\d+).*").unwrap();
@@ -89,6 +95,62 @@ pub fn get_run_length(content:&Vec<String>) -> (String, String) {
     // If neither ctme or nps found, return "Not found".
     return ("Not found".to_string(), "Not found".to_string());
 }
+
+
+pub fn write_html(
+    filename: String,
+    location: String,
+    scaling_factor:f64,
+    crit: bool,
+    rundate: String,
+    runtime: String,
+    ctme: String ,
+    nps: String,
+) {
+
+    // Tera templating
+    // Create new Tera instance
+    let tera = match Tera::new("src/templates/**/*") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+    // Create new context
+    let mut context = Context::new();
+
+    // Get css and add to context
+    let css = style::get_css();
+    context.insert("css", &css);
+    context.insert("filename", &filename);
+    context.insert("scaling_factor", &scaling_factor);
+    context.insert("crit", &crit);
+    context.insert("rundate", &rundate);
+    context.insert("runtime", &runtime);
+    context.insert("ctme", &ctme);
+    context.insert("nps", &nps);
+
+    // Placeholder
+    context.insert("name", &"World");
+
+
+    // Render template using context
+    let html = tera.render("mcnp_template.html", &context).expect("Failed to render template.");
+
+    // create html file
+    let mut html_path = PathBuf::new();
+    html_path.push(&location);
+    html_path.push(&filename);
+    html_path.set_extension("html");
+    // Write html file
+    let mut html_file = File::create(&html_path).expect("Unable to create html file.");
+    println!("\nCreated file {}", &html_path.display());
+    html_file.write_all(html.as_bytes()).expect("Unable to write html to file.");
+    println!("Wrote HTML to file {}", &html_path.display());
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TESTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

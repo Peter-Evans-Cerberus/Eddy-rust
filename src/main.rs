@@ -3,7 +3,6 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::io::{prelude::*, BufReader};
-use tera::{Tera, Context};
 mod mcnp;
 
 
@@ -27,19 +26,20 @@ fn main() {
     }
 
     // Tera templating
-// Use globbing
-    let mut tera = match Tera::new("src/templates/**/*") {
-        Ok(t) => t,
-        Err(e) => {
-            println!("Parsing error(s): {}", e);
-            ::std::process::exit(1);
-        }
-    };
-    let mut context = Context::new();
-    context.insert("name", &"World");
-
-    let html = tera.render("hello.html", &context).expect("Hnggg");
-    println!("{html}");
+    // Create new Tera instance
+    // let mut tera = match Tera::new("src/templates/**/*") {
+        // Ok(t) => t,
+        // Err(e) => {
+            // println!("Parsing error(s): {}", e);
+            // ::std::process::exit(1);
+        // }
+    // };
+    // // Create new context
+    // let mut context = Context::new();
+    // context.insert("name", &"World");
+    // //Render template using context
+    // let html = tera.render("hello.html", &context).expect("Failed to render template.");
+    // println!("{html}");
 
 
 }
@@ -49,8 +49,7 @@ pub fn read_file(filepath: &Path) -> Vec<String> {
     let file = fs::File::open(filepath).expect("Problem finding file.");
     let reader = BufReader::new(file);
     let mut content = Vec::new();
-    for line in reader.lines() {
-        content.push(line.expect("Problem reading line from input file."));
+    for line in reader.lines() {        content.push(line.expect("Problem reading line from input file."));
     };
     return content;
 } 

@@ -1,5 +1,5 @@
 pub fn get_css() -> String {
-    return String::from(" 
+    return String::from(r" 
     <style type='text/css'>
 
     /*----------------------------------------------------------------------

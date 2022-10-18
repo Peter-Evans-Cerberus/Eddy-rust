@@ -276,9 +276,87 @@
             }
         
         
-        </style>
+    </style>
 </head>
 
-<p> Hello, {{name}}!</p>
 
+<body>
+
+<div class="navbar">
+    <ul>
+      <li><a href="#top">Home</a></li>
+      {% if tally_list %}
+      <li><a href="#results_summary">Summary</a></li>
+      <li><a href="#results_breakdown">Results Breakdown</a></li>
+      {% endif %}
+      {% if k_eff %}
+      <li><a href="#k_effective">K-Effective</a></li>
+      {% endif %}
+      {% if cycles %}
+      <li><a href="#cycles">Cycles</a></li>
+      {% endif %}
+      {% if warnings %}
+      <li><a href="#warnings">Warnings</a></li>
+      {% endif %}
+      {% if comments %}
+      <li><a href="#comments">Comments</a></li>
+      {% endif %}
+      {% if duplicate_surfaces %}
+      <li><a href="#duplicates">Duplicate Surfaces</a></li>
+      {% endif %}
+      <li><a href="#cells">Cells</a></li>
+      {% for particle in particle_list %}
+      <li><a href="#{{particle.particle_type}}">{{particle.particle_type}}s</a></li>
+      {% endfor %}
+      {% for particle in particle_list %}
+      <li><a href="#{{particle.particle_type}}_populations">{{particle.particle_type}} Populations</a></li>
+      {% endfor %}
+      <li><a href="#input_deck">MCNP Input</a><li>
+    </ul>
+</div>
+
+<div id="heading">
+    <h1>{{ filename }}</h1>
+</div>
+
+<div id="details">
+    <details open>
+        <summary>Summary</summary>
+        <table class="details">
+        <tr>
+          <td style="background-color: #cce0ff;">Input Generated from MCNP Case</td>
+          <td>{{filename}}</td>
+        </tr>
+        <tr>
+          <td style="background-color: #cce0ff;">MCNP Case Executed</td>
+          <td style="white-space: pre">{{ rundate }}   {{ runtime }}</td>
+        </tr>
+        <tr>
+          <td style="background-color: #cce0ff;">HTML Output Created</td>
+          <td style="white-space: pre;">{{ date }}   {{ time }}</td>
+        </tr>
+        {% if not crit %}
+        <tr>
+          <td style="background-color: #cce0ff;">Scaling Factor: </td>
+          <td>{{scaling_factor}} </td>
+        </tr>
+        {% endif %}
+        {% if ctme %}
+        <tr>
+          <td style="background-color: #cce0ff;">CTME</td>
+          <td>{{ctme}}</td>
+        </tr>
+        {% endif %}
+        {% if nps %}
+        <tr>
+          <td style="background-color: #cce0ff;">NPS</td>
+          <td>{{nps}}</td>
+        </tr>
+        {% endif %}
+        </table>
+    </details>
+    </div>
+
+
+</body>
 </html>

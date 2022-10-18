@@ -22,25 +22,8 @@ fn main() {
     if code == "MCNP" {
         mcnp::eddy_mcnp(filepath, &data, scaling_factor);
     } else if code == "SCALE" {
-        println!("SCALE case recognised. Implementation not yet complete.")
+        println!("\nSCALE case recognised. Implementation not yet complete.")
     }
-
-    // Tera templating
-    // Create new Tera instance
-    // let mut tera = match Tera::new("src/templates/**/*") {
-        // Ok(t) => t,
-        // Err(e) => {
-            // println!("Parsing error(s): {}", e);
-            // ::std::process::exit(1);
-        // }
-    // };
-    // // Create new context
-    // let mut context = Context::new();
-    // context.insert("name", &"World");
-    // //Render template using context
-    // let html = tera.render("hello.html", &context).expect("Failed to render template.");
-    // println!("{html}");
-
 
 }
 
@@ -58,13 +41,13 @@ pub fn read_file(filepath: &Path) -> Vec<String> {
 pub fn determine_code(file:&Vec<String>) -> &str {
     //TODO: make this work even with files < 4 lines long - how do try/except work in Rust?
     if file[0].contains("Code Name & Version = MCNP") || file[0].contains("1mcnp     version") {
-        println!("Case identified as MCNP output.");
+        println!("\nCase identified as MCNP output.");
         return "MCNP";
     } else if file[2].contains("SCALE") {
-        println!("Case identified as SCALE output.");
+        println!("\nCase identified as SCALE output.");
         return "SCALE";
     } else {
-        panic!("File not identified as SCALE or MCNP output.")
+        panic!("\nFile not identified as SCALE or MCNP output.")
     };
 }
 

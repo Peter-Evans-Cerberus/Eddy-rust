@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
 use tera::{Tera, Context};
-mod style;
+use chrono;
 
 
 pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
@@ -21,8 +21,11 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
 
     let (ctme, nps) = get_run_length(content);
 
+    // Placeholder
+    let mut particle_list = Vec::new();
+    // particle_list.push("photon");
 
-    // Write html using data in struct
+    // Write html using data
     write_html(
         filename,
         location,
@@ -32,6 +35,7 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
         runtime,
         ctme, 
         nps,
+        particle_list,
     );
 
 }
@@ -106,11 +110,15 @@ pub fn write_html(
     runtime: String,
     ctme: String ,
     nps: String,
-) {
+    particle_list: Vec<&str>,
+                    ) {
+
+
+
 
     // Tera templating
     // Create new Tera instance
-    let mut tera = match Tera::new("src/templates/**/*") {
+    let tera = match Tera::new("src/templates/**/*") {
         Ok(t) => t,
         Err(e) => {
             println!("Parsing error(s): {}", e);
@@ -120,14 +128,21 @@ pub fn write_html(
     // Create new context
     let mut context = Context::new();
 
+    // get today's date and time
+    let now = get_now();
+    let date = now.date().to_string();
+    let time = now.time().to_string();
+
     context.insert("filename", &filename);
     context.insert("scaling_factor", &scaling_factor);
     context.insert("crit", &crit);
     context.insert("rundate", &rundate);
     context.insert("runtime", &runtime);
+    context.insert("date", &date);
+    context.insert("time", &time);
     context.insert("ctme", &ctme);
     context.insert("nps", &nps);
-
+    context.insert("particle_list", &particle_list);
     // Placeholder
     context.insert("name", &"World");
 
@@ -143,10 +158,15 @@ pub fn write_html(
     println!("\nCreated file {}", &html_path.display());
     // Write html file
     html_file.write_all(html.as_bytes()).expect("Unable to write html to file.");
-    println!("Wrote HTML to file {}", &html_path.display());
+    println!("Wrote HTML to file {}\n", &html_path.display());
 
 }
 
+
+pub fn get_now() -> chrono::DateTime<chrono::Utc> {
+    let now = chrono::Utc::now();
+    return now;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TESTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

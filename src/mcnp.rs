@@ -21,27 +21,47 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
 
     let (ctme, nps) = get_run_length(content);
 
+    let mcnp_input: Vec<String> = get_input(content);
+
+
+
     // Placeholder
     let mut particle_list = Vec::new();
     // particle_list.push("photon");
 
-    // Write html using data
-    write_html(
-        filename,
-        location,
-        scaling_factor,
-        crit,
-        rundate,
-        runtime,
-        ctme, 
-        nps,
-        particle_list,
+
+
+
+
+
+
+
+    // Get html from template using data
+    let html = get_html(
+        &filename,
+        &scaling_factor,
+        &crit,
+        &rundate,
+        &runtime,
+        &ctme, 
+        &nps,
+        &particle_list,
     );
+    // Write html string to file
+    write_html(html, location, filename);
 
 }
 
 
 pub fn check_if_crit(content:&Vec<String>) -> bool {
+    // Returns a bool:
+    // true if this is crit case (if "kcode" is detected anywhere)
+    // false if not crit case    
+    // 
+    // Arguments
+    // * content - a &Vec<string> containing the full contents of the .out file
+    // 
+
     for line in content {
         if line.contains("kcode") {
             return true;
@@ -52,6 +72,12 @@ pub fn check_if_crit(content:&Vec<String>) -> bool {
 
 
 pub fn get_rundate(content:&Vec<String>) -> (String, String) {
+    // Returns date and time this mcnp case was run
+    // as a tuple of 2 Strings
+    // 
+    // Arguments
+    // * content - a &Vec<string> containing the full contents of the .out file
+    // 
 
     let re = Regex::new(r"1mcnp.*version\s\d.*\d\d/\d\d/\d\d\s*(\d\d/\d\d/\d\d)\s(\d\d:\d\d:\d\d)").unwrap();
     for line in content {
@@ -74,6 +100,13 @@ pub fn get_rundate(content:&Vec<String>) -> (String, String) {
 
 
 pub fn get_run_length(content:&Vec<String>) -> (String, String) {
+    // Returns a tuple of 2 Strings, one of which will be "N/A",
+    // the other will be the run length in seconds or particles.
+    // 
+    // Arguments
+    // * content - a &Vec<string> containing the full contents of the .out file
+    // 
+
     let re_nps = Regex::new(r"^\s{6,}\d+-\s{7}(nps|NPS)\s+(\d+.*)\s*").unwrap();
     let re_ctme = Regex::new(r"^\s{6,}\d+-\s{7}(ctme|CTME)\s+(\d+).*").unwrap();
     for line in content {
@@ -101,37 +134,45 @@ pub fn get_run_length(content:&Vec<String>) -> (String, String) {
 }
 
 
-pub fn write_html(
-    filename: String,
-    location: String,
-    scaling_factor:f64,
-    crit: bool,
-    rundate: String,
-    runtime: String,
-    ctme: String ,
-    nps: String,
-    particle_list: Vec<&str>,
-                    ) {
+pub fn get_input(content:&Vec<String>) -> Vec<String> {
+    // Returns the section of the mcnp output file that mirrors the MCNP input
+    //
+    // Arguments
+    // * content - a &Vec<string> containing the full contents of the .out file
+    // 
+
+    let re = Regex::new(r"^\s{6,}\d+-\s{7}(.*)").unwrap();
+    let mut mcnp_input: Vec<String> = Vec::new();
+    for line in content {
+        if re.is_match(line) {
+            mcnp_input.push(line.to_string());
+        }    
+    }
+    return mcnp_input;
+
+}
 
 
+pub fn get_html(
+                    filename: &String,
+                    scaling_factor:&f64,
+                    crit: &bool,
+                    rundate: &String,
+                    runtime: &String,
+                    ctme: &String ,
+                    nps: &String,
+                    particle_list: &Vec<&str>,
+                    ) -> String {
 
-
-    // Tera templating
-    // Create new Tera instance
-    let tera = match Tera::new("src/templates/**/*") {
-        Ok(t) => t,
-        Err(e) => {
-            println!("Parsing error(s): {}", e);
-            ::std::process::exit(1);
-        }
-    };
-    // Create new context
-    let mut context = Context::new();
 
     // get today's date and time
-    let now = get_now();
-    let date = now.date().to_string();
-    let time = now.time().to_string();
+    let (date, time) = get_now();
+
+    // get tera template
+    let tera = get_tera();
+
+    // Create new context
+    let mut context = Context::new();
 
     context.insert("filename", &filename);
     context.insert("scaling_factor", &scaling_factor);
@@ -143,30 +184,56 @@ pub fn write_html(
     context.insert("ctme", &ctme);
     context.insert("nps", &nps);
     context.insert("particle_list", &particle_list);
-    // Placeholder
-    context.insert("name", &"World");
 
     // Render template using context
     let html = tera.render("mcnp_template.html", &context).expect("Failed to render template.");
 
-    // create html file
-    let mut html_path = PathBuf::new();
-    html_path.push(&location);
-    html_path.push(&filename);
-    html_path.set_extension("html");
-    let mut html_file = File::create(&html_path).expect("Unable to create html file.");
-    println!("\nCreated file {}", &html_path.display());
-    // Write html file
-    html_file.write_all(html.as_bytes()).expect("Unable to write html to file.");
-    println!("Wrote HTML to file {}\n", &html_path.display());
-
+    return html
 }
 
 
-pub fn get_now() -> chrono::DateTime<chrono::Utc> {
+pub fn write_html(html:String, location:String, filename:String) {
+        // create html file
+        let mut html_path = PathBuf::new();
+        html_path.push(&location);
+        html_path.push(&filename);
+        html_path.set_extension("html");
+        let mut html_file = File::create(&html_path).expect("Unable to create html file.");
+        println!("\nCreated file {}", &html_path.display());
+        // Write html file
+        html_file.write_all(html.as_bytes()).expect("Unable to write html to file.");
+        println!("Wrote HTML to file {}\n", &html_path.display());
+}
+
+
+pub fn get_now() -> (String,String) {
+    // Gets the current date and time
+    // returns a tuple of 2 strings
+    //
+    // Arguments - None
+    //
+
     let now = chrono::Utc::now();
-    return now;
+    let date = now.date().to_string();
+    let time = now.time().to_string();
+    return (date, time);
 }
+
+
+pub fn get_tera() -> Tera {
+    // Tera templating
+    // Returns new Tera instance
+
+    let tera = match Tera::new("src/templates/**/*") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+    return tera;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TESTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

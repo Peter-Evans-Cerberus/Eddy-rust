@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+    <meta charset="UTF-8">
+    <title>lost_particles.out: MCNP Results</title>
+    <style type='text/css'>
+
+        /*----------------------------------------------------------------------
+            CSS RESET
+            http://meyerweb.com/eric/tools/css/reset/
+            v2.0 | 20110126
+            License: none (public domain)
+        ----------------------------------------------------------------------*/
+        
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+        body {
+            line-height: 1;
+        }
+        ol, ul {
+            list-style: none;
+        }
+        blockquote, q {
+            quotes: none;
+        }
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+            content: '';
+            content: none;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        
+        /*----------------------------------------------------------------------*/
+        /* End of CSS Reset */
+        /*----------------------------------------------------------------------*/
+        
+        
+        
+        
+        html, body {
+            height: 100%;
+            background-color: white;
+            font-family: 'Work Sans', Raleway, sans-serif;
+            }
+        
+        p {
+            text-align: center;
+            color: #333333
+            }
+        
+        h1 {
+            text-align: center;
+            padding: 10px 0px;
+            color: #1c76bc;
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 20px;
+            }
+        
+        details > summary {
+            text-align: center;
+            padding: 10px 0px;
+            color: #1c76bc;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        details > summary:focus {
+            outline: 0px
+        }
+        
+        h2 {
+            text-align: center;
+            padding: 10px 0px;
+            color: #333333;
+            font-size: 20px;
+            font-weight: bold;
+            }
+        
+        h3 {
+            text-align: center;
+            padding: 10px 0px;
+            color: #333333;
+            font-size: 16px;
+            }
+        
+        table {
+            text-align:center;
+            border-collapse:collapse;
+            margin:auto;
+            /* line-height:10px; */
+            border:1px solid black;
+            }
+        
+        td {
+            padding:10px;
+            /* line-height: 120%; */
+            font-size:14px;
+            color: #333333;
+            border:1px solid black;
+            }
+        
+        th {
+            padding:10px;
+            line-height: 120%;
+            font-size:14px;
+            color: #333333;
+            border:1px solid black;
+            background-color: #cce0ff;
+            font-weight: bold;
+            }
+        
+        sup {
+            vertical-align: super;
+            font-size: smaller;
+            }
+        
+        div {
+            padding: 20px 0px;
+            }
+        
+        .navbar {
+            position: fixed;
+            background-color: #cce0ff;
+            margin: 0;
+            border-bottom: 1px solid #1c76bc ;
+            width: 100%;
+            height: auto;
+            padding: 5px;
+            }
+        
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            }
+        
+        .navbar li a {
+            padding: 5px 20px;
+            line-height: 170%;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            color: rgba(51,51,51,1);
+            }
+        
+        .navbar a:hover {
+            background-color: #1c76bc;
+            color: #FFFFFF;
+            }
+        
+        #logo {
+            text-align: center;
+            padding-top: 100px;
+            }
+        
+        #logo img{
+            display: inline-block;
+            width: 50%;
+            height: auto;
+            }
+        
+        #heading h1 {
+            font-size: 60px;
+            padding-top: 100px;
+        }
+        
+        .details {
+            padding: 10px;
+            table-layout: fixed;
+            width: 50%;
+            text-align:center;
+            border-collapse:collapse;
+            }
+        
+        .details td {
+            font-size: 20px;
+            text-align:center;
+            width: 50%;
+            word-wrap: break-word;
+            vertical-align: middle;
+            }
+        
+        .tally {
+            padding-bottom: 50px;
+        }
+        
+        .tally_results {
+            padding: 1px;
+        }
+        
+        .tally_checks {
+            padding: 1px;
+        }
+        
+        .termination_warning {
+            color: red;
+            font-size: 32px;
+        }
+        
+        #warnings, #duplicates, #comments, #fatal_errors, #error_log {
+            text-align: center;
+            }
+        
+        #warning_messages, #duplicate_messages, #comment_messages, #fatal_messages, #error_log_messages {
+            display:inline-block;
+            padding: 5px
+            }
+        
+        #fatal_messages, p {
+            text-align: left;
+            padding: 5px;
+            }
+        
+        #warning_messages, p {
+            text-align: left;
+            padding: 5px;
+            }
+        
+        #duplicate_messages, p {
+            text-align: left;
+            padding: 5px;
+            }
+        
+        #comment_messages p {
+            text-align: left;
+            padding: 5px;}
+        
+        #input_deck{
+            text-align: center;
+            margin: auto;
+            }
+        
+        #input {
+            display: inline-block;
+            }
+        
+        #input p {
+            white-space:pre;
+            font-family: Courier,monospace;
+            text-align:left;
+            }
+        
+        #cerberus_credit p {
+            text-align: center;
+            padding: 5px 50px 5px 50px;
+            line-height: 150%;
+            }
+        
+        
+    </style>
+</head>
+
+
+<body>
+
+<div class="navbar">
+    <ul>
+      <li><a href="#top">Home</a></li>
+      
+      
+      
+      
+      
+      
+      <li><a href="#cells">Cells</a></li>
+      
+      
+      <li><a href="#input_deck">MCNP Input</a><li>
+    </ul>
+</div>
+
+<div id="heading">
+    <h1>lost_particles.out</h1>
+</div>
+
+<div id="details">
+    <details open>
+        <summary>Summary</summary>
+        <table class="details">
+        <tr>
+          <td style="background-color: #cce0ff;">Input Generated from MCNP Case</td>
+          <td>lost_particles.out</td>
+        </tr>
+        <tr>
+          <td style="background-color: #cce0ff;">MCNP Case Executed</td>
+          <td style="white-space: pre">2021&#x2F;01&#x2F;29   10:15:35</td>
+        </tr>
+        <tr>
+          <td style="background-color: #cce0ff;">HTML Output Created</td>
+          <td style="white-space: pre;">2022-10-24UTC   15:14:28.678637300</td>
+        </tr>
+        
+        <tr>
+          <td style="background-color: #cce0ff;">Scaling Factor: </td>
+          <td>3.14 </td>
+        </tr>
+        
+        
+        <tr>
+          <td style="background-color: #cce0ff;">CTME</td>
+          <td>N&#x2F;A</td>
+        </tr>
+        
+        
+        <tr>
+          <td style="background-color: #cce0ff;">NPS</td>
+          <td>100</td>
+        </tr>
+        
+        </table>
+    </details>
+    </div>
+
+    
+
+
+    
+    <div id="lost_particles">
+        <h1 class="termination_warning">WARNING: THIS RUN WAS HALTED DUE TO 10 OR MORE PARTICLES BEING LOST</h1>
+    </div>
+    
+
+
+    <div id="input_deck">
+        <details>
+          <summary>MCNP Input</summary>
+          <div id="input">
+            
+              <p>         1-       MCNP example - lost particles</p>
+            
+              <p>         2-       c</p>
+            
+              <p>         3-       c ==============================================================================</p>
+            
+              <p>         4-       c =============================== START TITLE ==================================</p>
+            
+              <p>         5-       c ==============================================================================</p>
+            
+              <p>         6-       c   MCNP example Case - concentric spheres</p>
+            
+              <p>         7-       c</p>
+            
+              <p>         8-       c ==============================================================================</p>
+            
+              <p>         9-       c ============================= START CELL SECTION =============================</p>
+            
+              <p>        10-       c ==============================================================================</p>
+            
+              <p>        11-       c</p>
+            
+              <p>        12-       c    MATERIAL   DENSITY          SURFACES                     IMPORTANCE</p>
+            
+              <p>        13-       1        1     -0.001205          1 -2 3 -4 5 -6               IMP:N,P=1</p>
+            
+              <p>        14-       c outside, intentionally missing surface 6</p>
+            
+              <p>        15-       2        0                        -1:2:-3:4:-5                 IMP:N,P=0</p>
+            
+              <p>        16-       c</p>
+            
+              <p>        17-       c</p>
+            
+              <p>        18-       c ==============================================================================</p>
+            
+              <p>        19-       c ============================== END CELL SECTION ==============================</p>
+            
+              <p>        20-       c ==============================================================================</p>
+            
+              <p>        21-       </p>
+            
+              <p>        22-       c ==============================================================================</p>
+            
+              <p>        23-       c =========================== START SURFACE SECTION ============================</p>
+            
+              <p>        24-       c ==============================================================================</p>
+            
+              <p>        25-       c</p>
+            
+              <p>        26-       c             ======================================================</p>
+            
+              <p>        27-       c            Group:          Spherical Surfaces</p>
+            
+              <p>        28-       c            Contains 3 Surfaces.</p>
+            
+              <p>        29-       c             ======================================================</p>
+            
+              <p>        30-       1       px      -10</p>
+            
+              <p>        31-       2       px       10</p>
+            
+              <p>        32-       3       py      -10</p>
+            
+              <p>        33-       4       py       10</p>
+            
+              <p>        34-       5       pz      -10</p>
+            
+              <p>        35-       6       pz       10</p>
+            
+              <p>        36-       c</p>
+            
+              <p>        37-       c ==============================================================================</p>
+            
+              <p>        38-       c ============================ END SURFACE SECTION =============================</p>
+            
+              <p>        39-       c ==============================================================================</p>
+            
+              <p>        40-       </p>
+            
+              <p>        41-       c ==============================================================================</p>
+            
+              <p>        42-       c ============================= MATERIAL SECTION ===============================</p>
+            
+              <p>        43-       c ==============================================================================</p>
+            
+              <p>        44-       c  Material List:</p>
+            
+              <p>        45-       c                1 - Air                   - Density - 0.001205</p>
+            
+              <p>        46-       c</p>
+            
+              <p>        47-       c ==============================================================================</p>
+            
+              <p>        48-       c</p>
+            
+              <p>        49-       c ==============================================================================</p>
+            
+              <p>        50-       c Material 1 - Air - Density -0.001205</p>
+            
+              <p>        51-       c</p>
+            
+              <p>        52-       c      Element   ZAID          Mass Fraction</p>
+            
+              <p>        53-       c      O    -    8000    -     2.34793E-01</p>
+            
+              <p>        54-       c      N    -    7000    -     7.65082E-01</p>
+            
+              <p>        55-       c      C    -    6000    -     1.25611E-04</p>
+            
+              <p>        56-       c</p>
+            
+              <p>        57-       M1      8017        -9.486E-05</p>
+            
+              <p>        58-               8016        -2.343E-01</p>
+            
+              <p>        59-               7015        -3.001E-03</p>
+            
+              <p>        60-               7014        -7.626E-01</p>
+            
+              <p>        61-       c</p>
+            
+              <p>        62-       c</p>
+            
+              <p>        63-       c ==============================================================================</p>
+            
+              <p>        64-       c =========================== END MATERIAL SECTION =============================</p>
+            
+              <p>        65-       c ==============================================================================</p>
+            
+              <p>        66-       c ==============================================================================</p>
+            
+              <p>        67-       c =========================== START OF PHYSICS DATA ============================</p>
+            
+              <p>        68-       c ==============================================================================</p>
+            
+              <p>        69-       MODE P</p>
+            
+              <p>        70-       c ==============================================================================</p>
+            
+              <p>        71-       c ============================ END OF PHYSICS DATA =============================</p>
+            
+              <p>        72-       c ==============================================================================</p>
+            
+              <p>        73-       c ==============================================================================</p>
+            
+              <p>        74-       c ========================== START OF SOURCE SECTION ===========================</p>
+            
+              <p>        75-       c ==============================================================================</p>
+            
+              <p>        76-       SDEF ERG=1</p>
+            
+              <p>        77-            PAR=p</p>
+            
+              <p>        78-       c</p>
+            
+              <p>        79-       c ==============================================================================</p>
+            
+              <p>        80-       c =========================== END OF SOURCE SECTION ============================</p>
+            
+              <p>        81-       c ==============================================================================</p>
+            
+              <p>        82-       c ==============================================================================</p>
+            
+              <p>        83-       c ================================ CUT OFF DATA ================================</p>
+            
+              <p>        84-       c ==============================================================================</p>
+            
+              <p>        85-       nps 100</p>
+            
+              <p>        86-       c ==============================================================================</p>
+            
+              <p>        87-       c ============================ END OF CUT OFF DATA =============================</p>
+            
+              <p>        88-       c ==============================================================================</p>
+            
+              <p>        89-       c ==============================================================================</p>
+            
+              <p>        90-       c ================================= TALLY DATA =================================</p>
+            
+              <p>        91-       c ==============================================================================</p>
+            
+              <p>        92-       c</p>
+            
+              <p>        93-       c ADD TALLY DATA HERE</p>
+            
+              <p>        94-       F4:P  1</p>
+            
+              <p>        95-       c</p>
+            
+              <p>        96-       c</p>
+            
+              <p>        97-       c  ICRP H*(10) FLUX TO DOSE CONVERSION FACTORS</p>
+            
+              <p>        98-       DE0 1.000E-02 1.500E-02 2.000E-02 3.000E-02 4.000E-02 5.000E-02 6.000E-02    &amp;</p>
+            
+              <p>        99-            8.000E-02 1.000E-01 1.500E-01 2.000E-01 3.000E-01 4.000E-01 5.000E-01     &amp;</p>
+            
+              <p>       100-            6.000E-01 8.000E-01 1.000E+00 1.500E+00 2.000E+00 3.000E+00 4.000E+00     &amp;</p>
+            
+              <p>       101-            5.000E+00 6.000E+00 8.000E+00 1.000E+01</p>
+            
+              <p>       102-       DF0 2.196E-04 2.988E-03 3.780E-03 2.916E-03 2.304E-03 1.980E-03 1.836E-03    &amp;</p>
+            
+              <p>       103-            1.908E-03 2.196E-03 3.204E-03 4.320E-03 6.480E-03 8.568E-03 1.055E-02     &amp;</p>
+            
+              <p>       104-            1.238E-02 1.577E-02 1.872E-02 2.484E-02 3.096E-02 3.996E-02 4.824E-02     &amp;</p>
+            
+              <p>       105-            5.580E-02 6.336E-02 7.776E-02 9.216E-02</p>
+            
+              <p>       106-       c</p>
+            
+              <p>       107-       c ==============================================================================</p>
+            
+              <p>       108-       c ============================ END OF TALLY DATA ===============================</p>
+            
+              <p>       109-       c ==============================================================================</p>
+            
+              <p>       110-       c</p>
+            
+              <p>       111-       c ==============================================================================</p>
+            
+              <p>       112-       c ========================== RANDOM NUMBER GENERATOR ===========================</p>
+            
+              <p>       113-       c ==============================================================================</p>
+            
+              <p>       114-       RAND SEED=7504675590266</p>
+            
+              <p>       115-       c ==============================================================================</p>
+            
+              <p>       116-       c ========================== RANDOM NUMBER GENERATOR ===========================</p>
+            
+              <p>       117-       c ==============================================================================</p>
+            
+              <p>       118-       c</p>
+            
+              <p>       119-       </p>
+            
+          </div>
+        </details>
+    </div>
+
+</body>
+</html>

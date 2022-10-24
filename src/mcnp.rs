@@ -26,10 +26,29 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
 
     let parameters: HashMap<String, String> = get_parameters(&mcnp_input);
 
+    let lost_particles:bool = check_lost_particles(content);
+
+
+    //TODO: check_fatal_errors
+    //TODO: get_warnings
+    //TODO: get_comments
+    //TODO: get duplicate surfaces
+    //TODO: get_k_eff
+    //TODO: get_active_cycles
+    //TODO: get_cell_data
+    //TODO: get_particle_populations
+
+    // The sections below were implemeted following logic that makes sense for python
+    // and may not necessarily be the best implementations for rust
+    //TODO: create_cells ?
+    //TODO: find_mcnp_particle_data ?
+    //TODO: create_particle ?
+    //TODO: get_tallies ?
+
 
 
     // Placeholder
-    let mut particle_list = Vec::new();
+    let particle_list = Vec::new();     // will need to be made mutable
     // particle_list.push("photon");
 
 
@@ -49,6 +68,7 @@ pub fn eddy_mcnp(filepath: &Path, content:&Vec<String>, scaling_factor:f64) {
         &ctme, 
         &nps,
         &parameters,
+        &lost_particles,
         &mcnp_input,
         &particle_list,
     );
@@ -203,6 +223,20 @@ pub fn get_parameters(input: &Vec<String>) -> HashMap<String, String> {
 }
 
 
+pub fn check_lost_particles(content:&Vec<String>) -> bool {
+    // Check whether the run was terminated because 10 or more particles got lost
+    // Returns   bool: true if run terminated due to lost particles, otherwise false
+    //
+    // * content - a &Vec<string> containing the full contents of the .out file
+    // 
+
+    for line in content {
+        if line.contains("run terminated because") && line.contains("particles got lost") {
+            return true;
+        }
+    } 
+    return false;
+}
 
 pub fn get_html(
                     filename: &String,
@@ -213,6 +247,7 @@ pub fn get_html(
                     ctme: &String ,
                     nps: &String,
                     parameters: &HashMap<String, String>,
+                    lost_particles: &bool,
                     mcnp_input: &Vec<String>,
                     particle_list: &Vec<&str>,
                     ) -> String {
@@ -227,6 +262,7 @@ pub fn get_html(
     // Create new context
     let mut context = Context::new();
 
+
     context.insert("filename", &filename);
     context.insert("scaling_factor", &scaling_factor);
     context.insert("crit", &crit);
@@ -237,6 +273,7 @@ pub fn get_html(
     context.insert("ctme", &ctme);
     context.insert("nps", &nps);
     context.insert("parameters", &parameters);
+    context.insert("lost_particles", &lost_particles);
     context.insert("mcnp_input", &mcnp_input);
     context.insert("particle_list", &particle_list);
 
@@ -349,5 +386,22 @@ mod tests {
         assert_eq!(ctme, "1");
         assert_eq!(nps, "N/A");
     }
+
+    #[test]
+    fn test_check_lost_particles() {
+        let input = vec![
+            String::from("        1problem summary                               "),
+            String::from("        run terminated because  13 particles got lost."),
+            String::from("  +                                                                                                    01/29/21 10:15:36 "),
+            String::from("   =====>      49.80 M histories/hr    (based on wall-clock time in mcrun)"),
+        ];
+
+        assert!(check_lost_particles(&input));
+    }
+
+    //TODO: check crit
+    //TODO: check parameters?
+    //TODO: check get_input ?
+
 
 }
